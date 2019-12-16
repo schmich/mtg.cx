@@ -4,7 +4,7 @@
   <title>Magic: the Gathering Spoilers</title>
   <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
   <link rel="dns-prefetch" href="https://img.scryfall.com">
-  <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
+  <link rel="shortcut icon" href="images/favicon.png" type="image/png">
   <meta charset="utf-8">
   <meta name="theme-color" content="#222222">
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
@@ -170,7 +170,7 @@
     const ManaSymbol = {
       props: ['cost'],
       template: `
-        <img class="mana" :src="'/images/' + cost + '.svg'">
+        <img class="mana" :src="'images/' + cost + '.svg'">
       `
     };
 
@@ -253,8 +253,8 @@
             <template v-if="posts.length > 0">
               <div class="posts">
                 <a v-for="post in posts" :href="postUrl(post)" class="post">
-                  <span><img src="/images/comment.png"> {{ post.comments }}</span>
-                  <span><img src="/images/upvote.png"> {{ post.score }}</span>
+                  <span><img src="images/comment.png"> {{ post.comments }}</span>
+                  <span><img src="images/upvote.png"> {{ post.score }}</span>
                   <span>/r/{{ post.subreddit }}</span>
                 </a>
               </div>
@@ -300,7 +300,7 @@
         };
       },
       async created() {
-        let spoilers = await fetch('/spoilers.json');
+        let spoilers = await fetch('spoilers.json');
         let json = await spoilers.json();
         this.cardGroups = this.groupBy(json, card => this.formatDate(card.preview.previewed_at));
       },
