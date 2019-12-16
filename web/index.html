@@ -62,11 +62,30 @@
   .mana:last-of-type {
     margin-right: 0;
   }
+  .sorts {
+    display: flex;
+  }
+  .sorts button {
+    padding: 15px 0;
+    margin: 0 10%;
+    flex: 1;
+    background: transparent;
+    color: #777;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    text-transform: uppercase;
+    font-size: 13px;
+    font-weight: bold;
+  }
+  .sorts button.active {
+    color: #fff;
+    border-bottom-color: #e53900;
+  }
   .spoilers {
     display: flex;
     flex-direction: column;
   }
-  .spoilers .date {
+  .spoilers .label {
     background: #111311;
     padding: 25px 0;
     text-align: center;
@@ -285,24 +304,43 @@
         <div class="content">
           <img src="images/logo.png" class="logo">
           <div id="focus" v-if="focusImageUrl" :style="{ backgroundImage: 'url(' + focusImageUrl + ')' }" @click="hideFocus"></div>
+          <div class="sorts">
+            <button @click="sort = 'date'" :class="{ active: sort == 'date' }">Newest</button>
+            <button @click="sort = 'popularity'" :class="{ active: sort == 'popularity' }">Popular</button>
+          </div>
           <section class="spoilers">
-            <template v-for="(cards, date) in cardGroups">
-              <div class="date">{{ date }}</div>
-              <Card v-for="card of cards" v-bind="card" @focus="showFocus(card)"/>
+            <template v-if="cardGroups" v-for="(cards, label) in cardGroups">
+              <div v-if="label" class="label">{{ label }}</div>
+              <Card v-for="card of cards" v-bind="card" :key="card.id" @focus="showFocus(card)"/>
             </template>
           </section>
         </div>
       `,
       data() {
         return {
-          cardGroups: null,
+          sort: 'date',
+          cards: null,
           focusImageUrl: null
         };
       },
       async created() {
         let spoilers = await fetch('spoilers.json');
-        let json = await spoilers.json();
-        this.cardGroups = this.groupBy(json, card => this.formatDate(card.preview.previewed_at));
+        this.cards = await spoilers.json();
+      },
+      computed: {
+        cardGroups() {
+          if (!this.cards) {
+            return null;
+          }
+
+          if (this.sort == 'date') {
+            return this.groupBy(this.cards, card => this.formatDate(card.preview.previewed_at));
+          } else {
+            let cards = [...this.cards];
+            let popularity = card => card.posts.reduce((score, post) => score + post.comments * 2 + post.score, 0);
+            return { 'Most Popular': cards.sort((p, q) => popularity(q) - popularity(p)) };
+          }
+        }
       },
       methods: {
         showFocus(card) {
