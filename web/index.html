@@ -176,6 +176,12 @@
     z-index: 2;
     cursor: pointer;
   }
+  .fade-enter-active, .fade-leave-active {
+      transition: opacity 0.2s ease;
+  }
+  .fade-enter, .fade-leave-to {
+      opacity: 0;
+  }
   </style>
 </head>
 <body>
@@ -303,7 +309,9 @@
       template: `
         <div class="content">
           <img src="images/logo.png" class="logo">
-          <div id="focus" v-if="focusImageUrl" :style="{ backgroundImage: 'url(' + focusImageUrl + ')' }" @click="hideFocus"></div>
+          <transition name="fade">
+            <div id="focus" v-if="focusImageUrl" :style="{ backgroundImage: 'url(' + focusImageUrl + ')' }" @click="hideFocus"></div>
+          </transition>
           <div class="sorts">
             <button @click="sort = 'date'" :class="{ active: sort == 'date' }">Newest</button>
             <button @click="sort = 'popularity'" :class="{ active: sort == 'popularity' }">Popular</button>
