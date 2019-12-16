@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Magic: the Gathering Spoilers</title>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+  <link rel="dns-prefetch" href="https://img.scryfall.com">
+  <link rel="shortcut icon" href="/images/favicon.png" type="image/png">
+  <meta charset="utf-8">
+  <meta name="theme-color" content="#222222">
+  <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height">
+  <meta name="description" content="Magic: the Gathering Spoilers">
+  <meta property="og:image" content="https://mtg.cx/images/social.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1280">
+  <meta property="og:image:height" content="640">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://mtg.cx">
+  <meta property="og:title" content="Magic: the Gathering Spoilers">
+  <meta property="og:description" content="Magic: the Gathering Spoilers">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
+  <style>
+  * {
+    box-sizing: border-box !important;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  body {
+    padding: 0;
+    margin: 0;
+    background: #111311;
+    color: #fff;
+    font-family: Roboto, 'Helvetica Neue', 'Segoe UI', sans-serif;
+  }
+  .content {
+    background: #222522;
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 0;
+  }
+  .logo {
+    display: block;
+    width: 250px;
+    margin: 0 auto 20px auto;
+    padding-top: 10px;
+  }
+  a {
+    color: #fff;
+    text-decoration: none;
+  }
+  .mana {
+    width: 20px;
+    height: 20px;
+    margin-right: 3px;
+    filter: saturate(150%);
+  }
+  .mana:last-of-type {
+    margin-right: 0;
+  }
+  .spoilers {
+    display: flex;
+    flex-direction: column;
+  }
+  .spoilers .date {
+    background: #111311;
+    padding: 25px 0;
+    text-align: center;
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .spoiler {
+    display: flex;
+    align-items: flex-start;
+    padding: 20px 15px;
+    border-bottom: 2px solid #171a17;
+  }
+  .spoiler .art {
+    width: 100px;
+    height: 140px;
+    margin-right: 15px;
+    display: flex;
+    flex: 0 0 100px;
+    justify-content: center;
+    align-items: center;
+  }
+  .spoiler .art > img {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 5px;
+  }
+  .spoiler .details {
+    display: flex;
+    flex-direction: column;
+    margin-top: 5px;
+    width: 100%;
+    min-width: 0;
+  }
+  .spoiler .name {
+    font-size: 19px;
+    margin-top: 5px;
+  }
+  .spoiler .type {
+    font-size: 14px;
+    color: #aaa;
+    margin-top: 5px;
+    margin-bottom: 20px;
+  }
+  .spoiler .name, .spoiler .type {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+  }
+  .spoiler .posts {
+    display: table;
+    max-width: 400px;
+  }
+  .spoiler .post {
+    display: table-row;
+    color: #ccc;
+    margin: 7px 0;
+    font-size: 13px;
+  }
+  .spoiler .post > * {
+    display: table-cell;
+    padding: 6px 0;
+  }
+  .spoiler .post > :nth-child(1) {
+    width: 25%;
+  }
+  .spoiler .post > :nth-child(2) {
+    width: 25%;
+  }
+  .spoiler .post > :nth-child(3) {
+    width: 50%;
+  }
+  .spoiler .post img {
+    width: 14px;
+    margin-right: 4px;
+    position: relative;
+    top: 2px;
+  }
+  #focus {
+    position: fixed;
+    background-repeat: no-repeat;
+    background-position: center;
+    background-size: contain;
+    background-color: #000c;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    cursor: pointer;
+  }
+  </style>
+</head>
+<body>
+  <div id="app"></div>
+  <script>
+    function imageUrl(card, size) {
+      let id = card.id;
+      return `https://img.scryfall.com/cards/${size}/front/${id[0]}/${id[1]}/${id}.jpg`;
+    }
+
+    const ManaSymbol = {
+      props: ['cost'],
+      template: `
+        <img class="mana" :src="'/images/' + cost + '.svg'">
+      `
+    };
+
+    const Mana = {
+      props: ['cost'],
+      template: `
+        <div>
+          <ManaSymbol v-for="cost of costs" :cost="cost"/>
+        </div>
+      `,
+      data() {
+        let costs = [];
+        if (this.cost) {
+          costs = this.cost.split('{').map(c => c.replace('}', '')).filter(c => !!c);
+        }
+
+        return {
+          costs
+        };
+      },
+      components: {
+        ManaSymbol
+      }
+    };
+
+    const LazySrc = (() => {
+      let observer = null;
+
+      let loadImage = el => {
+        let src = el.dataset.lazySrc;
+        if (!src) {
+          return;
+        }
+
+        el.setAttribute('src', src);
+        delete el.dataset.lazySrc;
+      };
+
+      return {
+        bind(el, bindings) {
+          if (!window.IntersectionObserver) {
+            // On unsupported browsers, load the image immediately.
+            loadImage(el);
+            return;
+          }
+
+          if (observer == null) {
+            observer = new IntersectionObserver(entries => {
+              for (let entry of entries) {
+                if (!entry.isIntersecting) {
+                  continue;
+                }
+
+                loadImage(entry.target);
+                observer.unobserve(entry.target);
+              }
+            }, { rootMargin: '300px' });
+          }
+
+          el.dataset.lazySrc = bindings.value;
+          observer.observe(el);
+        },
+        unbind(el) {
+          observer.unobserve(el);
+        }
+      };
+    })();
+
+    const Card = {
+      props: ['id', 'name', 'posts', 'cost', 'type', 'preview'],
+      template: `
+        <div class="spoiler">
+          <div class="art">
+            <img @click.prevent="$emit('focus', this)" src="" v-lazy-src="imageUrl">
+          </div>
+          <div class="details">
+            <div v-if="cost" class="mana-cost"><Mana :cost="cost"/></div>
+            <div class="name">{{ name }}</div>
+            <div class="type">{{ type }}</div>
+            <template v-if="posts.length > 0">
+              <div class="posts">
+                <a v-for="post in posts" :href="postUrl(post)" class="post">
+                  <span><img src="/images/comment.png"> {{ post.comments }}</span>
+                  <span><img src="/images/upvote.png"> {{ post.score }}</span>
+                  <span>/r/{{ post.subreddit }}</span>
+                </a>
+              </div>
+            </template>
+          </div>
+        </div>
+      `,
+      computed: {
+        imageUrl() {
+          return imageUrl(this, 'small');
+        }
+      },
+      methods: {
+        postUrl(post) {
+          return `https://www.reddit.com/r/${post.subreddit}/comments/${post.id}`;
+        }
+      },
+      components: {
+        Mana
+      },
+      directives: {
+        LazySrc
+      }
+    };
+
+    new Vue({
+      template: `
+        <div class="content">
+          <img src="images/logo.png" class="logo">
+          <div id="focus" v-if="focusImageUrl" :style="{ backgroundImage: 'url(' + focusImageUrl + ')' }" @click="hideFocus"></div>
+          <section class="spoilers">
+            <template v-for="(cards, date) in cardGroups">
+              <div class="date">{{ date }}</div>
+              <Card v-for="card of cards" v-bind="card" @focus="showFocus(card)"/>
+            </template>
+          </section>
+        </div>
+      `,
+      data() {
+        return {
+          cardGroups: null,
+          focusImageUrl: null
+        };
+      },
+      async created() {
+        let spoilers = await fetch('/spoilers.json');
+        let json = await spoilers.json();
+        this.cardGroups = this.groupBy(json, card => this.formatDate(card.preview.previewed_at));
+      },
+      methods: {
+        showFocus(card) {
+          this.focusImageUrl = imageUrl(card, 'large');
+        },
+        hideFocus() {
+          this.focusImageUrl = null;
+        },
+        groupBy(arr, fn) {
+          return arr.reduce((groups, x) => {
+            let key = fn(x);
+            (groups[key] = groups[key] || []).push(x);
+            return groups;
+          }, {});
+        },
+        formatDate(ymd) {
+          let date = new Date(ymd);
+          let month = date.toLocaleString('en-US', { timeZone: 'UTC', month: 'long' });
+          let day = date.toLocaleString('en-US', { timeZone: 'UTC', day: 'numeric' });
+          let suffix = 'th';
+          if (day < 10 || day > 20) {
+            suffix = { 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || suffix;
+          }
+          return `${month} ${day}${suffix}`;
+        }
+      },
+      components: {
+        Card
+      },
+      el: '#app'
+    });
+  </script>
+</body>
+</html>
