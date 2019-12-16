@@ -140,7 +140,7 @@
   }
   .spoiler .post img {
     width: 14px;
-    margin-right: 4px;
+    margin-right: 5px;
     position: relative;
     top: 2px;
   }
@@ -253,8 +253,8 @@
             <template v-if="posts.length > 0">
               <div class="posts">
                 <a v-for="post in posts" :href="postUrl(post)" class="post">
-                  <span><img src="images/comment.png"> {{ post.comments }}</span>
-                  <span><img src="images/upvote.png"> {{ post.score }}</span>
+                  <span><img src="images/comment.png">{{ post.comments }}</span>
+                  <span><img src="images/upvote.png">{{ post.score }}</span>
                   <span>/r/{{ post.subreddit }}</span>
                 </a>
               </div>
