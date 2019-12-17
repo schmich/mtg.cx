@@ -337,14 +337,11 @@
       data() {
         return {
           sort: localStorage.getItem('mtg:sort') || 'date',
-          cards: null,
+          cards: JSON.parse(localStorage.getItem('mtg:cards')),
           focusImageUrl: null
         };
       },
       created() {
-        let stored = localStorage.getItem('mtg:cards');
-        this.cards = stored && JSON.parse(stored);
-
         (async () => {
           let spoilers = await fetch('spoilers.json');
           this.cards = await spoilers.json();
