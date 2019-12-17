@@ -225,14 +225,21 @@
     const LazySrc = (() => {
       let observer = null;
 
+      let onload = el => {
+        el.target.style.visibility = 'visible';
+        el.target.removeEventListener('load', onload);
+      };
+
       let loadImage = el => {
         let src = el.dataset.lazySrc;
         if (!src) {
           return;
         }
 
-        el.setAttribute('src', src);
+        el.addEventListener('load', onload);
         delete el.dataset.lazySrc;
+
+        el.setAttribute('src', src);
       };
 
       return {
@@ -255,6 +262,8 @@
               }
             }, { rootMargin: '300px' });
           }
+
+          el.style.visibility = 'hidden';
 
           el.dataset.lazySrc = bindings.value;
           observer.observe(el);
