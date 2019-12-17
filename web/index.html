@@ -282,7 +282,7 @@
             <img @click.prevent="$emit('focus', this)" src="" v-lazy-src="imageUrl">
           </div>
           <div class="details">
-            <div v-if="cost" class="mana-cost"><Mana :cost="cost"/></div>
+            <Mana v-if="cost" class="mana-cost" :cost="cost"/>
             <div class="name">{{ name }}</div>
             <div class="type">{{ type }}</div>
             <template v-if="posts.length > 0">
