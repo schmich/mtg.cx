@@ -336,14 +336,20 @@
       `,
       data() {
         return {
-          sort: 'date',
+          sort: localStorage.getItem('mtg:sort') || 'date',
           cards: null,
           focusImageUrl: null
         };
       },
-      async created() {
-        let spoilers = await fetch('spoilers.json');
-        this.cards = await spoilers.json();
+      created() {
+        let stored = localStorage.getItem('mtg:cards');
+        this.cards = stored && JSON.parse(stored);
+
+        (async () => {
+          let spoilers = await fetch('spoilers.json');
+          this.cards = await spoilers.json();
+          localStorage.setItem('mtg:cards', JSON.stringify(this.cards));
+        })();
       },
       computed: {
         cardGroups() {
@@ -383,6 +389,11 @@
             suffix = { 1: 'st', 2: 'nd', 3: 'rd' }[day % 10] || suffix;
           }
           return `${month} ${day}${suffix}`;
+        }
+      },
+      watch: {
+        sort(to) {
+          localStorage.setItem('mtg:sort', to);
         }
       },
       components: {
