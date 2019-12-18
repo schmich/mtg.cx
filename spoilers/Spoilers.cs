@@ -51,9 +51,6 @@ namespace Spoilers
             foreach (var card in cards) {
                 Console.WriteLine($"Process {card.Name}.");
 
-                // Cards don't always have preview info available, so we use today as the fallback.
-                var previewedAt = card.Preview?.PreviewedAt ?? today;
-
                 var spoiler = oldSpoilers.GetValueOrDefault(card.Id);
                 if (spoiler == null) {
                     spoiler = new Spoiler {
@@ -64,7 +61,7 @@ namespace Spoilers
                         Preview = new Preview {
                             SourceName = card.Preview?.SourceName,
                             URL = card.Preview?.SourceURL,
-                            PreviewedAt = previewedAt
+                            PreviewedAt = card.Preview?.PreviewedAt ?? today
                         }
                     };
 
@@ -76,11 +73,11 @@ namespace Spoilers
                     spoiler.Preview = new Preview {
                         SourceName = card.Preview?.SourceName,
                         URL = card.Preview?.SourceURL,
-                        PreviewedAt = previewedAt
+                        PreviewedAt = card.Preview?.PreviewedAt ?? spoiler.Preview.PreviewedAt
                     };
                 }
 
-                var previewDate = DateTime.Parse(previewedAt);
+                var previewDate = DateTime.Parse(spoiler.Preview.PreviewedAt);
                 if (DateTime.Now - previewDate > TimeSpan.FromDays(2)) {
                     continue;
                 }
