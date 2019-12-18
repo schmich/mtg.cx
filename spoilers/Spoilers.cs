@@ -45,7 +45,7 @@ namespace Spoilers
                 subredditNames.Select(name => KeyValuePair.Create(name.ToLowerInvariant(), reddit.Subreddit(name)))
             );
 
-            var wotcTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            var wotcTimeZone = TimeZoneInfo.GetSystemTimeZones().First(tz => tz.Id == "America/Los_Angeles" || tz.Id == "Pacific Standard Time");
             var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.ToUniversalTime(), wotcTimeZone).ToString("yyyy'-'MM'-'dd");
 
             foreach (var card in cards) {
