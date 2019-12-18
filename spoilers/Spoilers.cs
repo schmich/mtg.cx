@@ -45,11 +45,14 @@ namespace Spoilers
                 subredditNames.Select(name => KeyValuePair.Create(name.ToLowerInvariant(), reddit.Subreddit(name)))
             );
 
+            var wotcTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Pacific Standard Time");
+            var today = TimeZoneInfo.ConvertTimeFromUtc(DateTime.Now.ToUniversalTime(), wotcTimeZone).ToString("yyyy'-'MM'-'dd");
+
             foreach (var card in cards) {
                 Console.WriteLine($"Process {card.Name}.");
 
                 // Cards don't always have preview info available, so we use today as the fallback.
-                var previewedAt = card.Preview?.PreviewedAt ?? DateTime.Now.ToString("yyyy'-'MM'-'dd");
+                var previewedAt = card.Preview?.PreviewedAt ?? today;
 
                 var spoiler = oldSpoilers.GetValueOrDefault(card.Id);
                 if (spoiler == null) {
