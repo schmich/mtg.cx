@@ -30,13 +30,15 @@ namespace Spoilers
                     }
                 };
 
-                using (var response = await client.SendAsync(request)) {
-                    response.EnsureSuccessStatusCode();
+                using (request) {
+                    using (var response = await client.SendAsync(request)) {
+                        response.EnsureSuccessStatusCode();
 
-                    string body = await response.Content.ReadAsStringAsync();
-                    var results = JObject.Parse(body);
+                        string body = await response.Content.ReadAsStringAsync();
+                        var results = JObject.Parse(body);
 
-                    return (string)results["access_token"];
+                        return (string)results["access_token"];
+                    }
                 }
             }
         }
