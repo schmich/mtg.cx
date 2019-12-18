@@ -1,6 +1,7 @@
 set -euf -o pipefail
 
 repo=git@github.com:schmich/mtg.cx
+branch=web
 cd $(dirname $0)
 
 openssl aes-256-cbc -iv $encrypted_ebc0ce15b791a71d_iv -K $encrypted_ebc0ce15b791a71d_key -in deploy_key.enc -out deploy_key -d
@@ -14,14 +15,14 @@ ssh-keyscan -H github.com >> ~/.ssh/known_hosts
 chmod 600 ~/.ssh/known_hosts
 
 spoilers=$(mktemp -d)
-git clone --single-branch --branch gh-pages --depth 1 $repo $spoilers
+git clone --single-branch --branch $branch --depth 1 $repo $spoilers
 
 ../heroku_output/Spoilers $spoilers/spoilers.json $spoilers/spoilers.json
 
-ghpages=$(mktemp -d)
-git clone --single-branch --branch gh-pages --depth 3 $repo $ghpages
+live=$(mktemp -d)
+git clone --single-branch --branch $branch --depth 3 $repo $live
 
-cd $ghpages
+cd $live
 git reset --soft HEAD~1
 git config user.name "Chris Schmich"
 git config user.email "schmch@gmail.com"
@@ -29,4 +30,4 @@ git config user.email "schmch@gmail.com"
 cp $spoilers/spoilers.json ./spoilers.json
 git commit -am "Update spoilers.json."
 
-git push --force origin gh-pages
+git push --force origin $branch
