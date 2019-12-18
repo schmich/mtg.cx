@@ -74,8 +74,8 @@ namespace Spoilers
                     spoiler.ManaCost = card.ManaCost;
                     spoiler.TypeLine = card.TypeLine;
                     spoiler.Preview = new Preview {
-                        SourceName = card.Preview.SourceName,
-                        URL = card.Preview.SourceURL,
+                        SourceName = card.Preview?.SourceName,
+                        URL = card.Preview?.SourceURL,
                         PreviewedAt = previewedAt
                     };
                 }
