@@ -17,10 +17,12 @@ namespace Spoilers
             var netlify = new NetlifyClient(accessToken, siteId);
             string spoilersPath = "/spoilers.json";
 
-            var input = Encoding.UTF8.GetString(await netlify.GetFile(spoilersPath));
+            var input = Encoding.UTF8.GetString(await netlify.GetFileContents(spoilersPath));
             var spoilers = JsonConvert.DeserializeObject<List<Spoiler>>(input);
 
             spoilers = await Spoilers.Update(spoilers);
+
+            Console.WriteLine("Deploy spoilers.json.");
 
             var output = Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(spoilers));
             await netlify.Deploy("Update spoilers.json.", new Dictionary<string, byte[]> {

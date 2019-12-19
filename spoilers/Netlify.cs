@@ -25,7 +25,17 @@ namespace Spoilers.Netlify
             }
         }
 
-        public async Task<byte[]> GetFile(string path) {
+        public async Task<List<File>> GetFiles() {
+            var url = URL($"/sites/{HttpUtility.UrlEncode(_siteId)}/files");
+            using (var response = await _client.GetAsync(url)) {
+                response.EnsureSuccessStatusCode();
+
+                var json = await response.Content.ReadAsStringAsync();
+                return JsonConvert.DeserializeObject<List<File>>(json);
+            }
+        }
+
+        public async Task<byte[]> GetFileContents(string path) {
             var url = URL($"/sites/{HttpUtility.UrlEncode(_siteId)}/files{path}");
             using (var request = new HttpRequestMessage(HttpMethod.Get, url)) {
                 request.Content = new StringContent("", Encoding.UTF8, "application/vnd.bitballoon.v1.raw");
@@ -37,9 +47,14 @@ namespace Spoilers.Netlify
         }
 
         async Task<string> CreateDeployment(string message, Dictionary<string, byte[]> files) {
+            var fileHashes = (await GetFiles()).ToDictionary(file => file.Path, file => file.SHA1Hash);
+            foreach (var entry in files) {
+                fileHashes[entry.Key] = SHA1Hash(entry.Value);
+            }
+
             dynamic body = new {
                 title = message,
-                files = files.ToDictionary(entry => entry.Key, entry => SHA1Hash(entry.Value))
+                files = fileHashes
             };
 
             var content = new StringContent(JsonConvert.SerializeObject(body), Encoding.UTF8, "application/json");
@@ -77,5 +92,29 @@ namespace Spoilers.Netlify
         HttpClient _client = new HttpClient(new HttpClientHandler {
             AutomaticDecompression = DecompressionMethods.All
         });
+    }
+
+    class File
+    {
+        [JsonProperty("id")]
+        public string Id;
+
+        [JsonProperty("site_id")]
+        public string SiteId;
+
+        [JsonProperty("deploy_id")]
+        public string DeployId;
+
+        [JsonProperty("path")]
+        public string Path;
+
+        [JsonProperty("sha")]
+        public string SHA1Hash;
+
+        [JsonProperty("mime_type")]
+        public string MimeType;
+
+        [JsonProperty("size")]
+        public long Size;
     }
 }

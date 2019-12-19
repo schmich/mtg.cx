@@ -28,7 +28,7 @@ namespace Spoilers
                 }
             }
 
-            Console.WriteLine($"Fetch Scryfall cards.");
+            Console.WriteLine("Fetch Scryfall cards.");
 
             var scryfall = new ScryfallClient();
             var cards = await scryfall.FetchSetCards("thb");
