@@ -36,8 +36,9 @@ namespace Spoilers.Netlify
             }
         }
 
-        public async Task<List<File>> GetFiles() {
-            var url = BuildURL($"/sites/{HttpUtility.UrlEncode(_siteId)}/files");
+        public async Task<List<File>> GetFiles(string deployId = default) {
+            var query = (deployId == default) ? default : new[] { ("deploy_id", deployId) };
+            var url = BuildURL($"/sites/{HttpUtility.UrlEncode(_siteId)}/files", query);
             using (var response = await _client.GetAsync(url)) {
                 response.EnsureSuccessStatusCode();
 
@@ -59,7 +60,11 @@ namespace Spoilers.Netlify
         }
 
         async Task<string> CreateDeployment(string message, Dictionary<string, byte[]> files) {
-            var fileHashes = (await GetFiles()).ToDictionary(file => file.Path, file => file.SHA1Hash);
+            var deploys = await GetDeploys();
+            var latestDeploy = deploys.Where(d => d.State == "ready").OrderByDescending(d => d.CreatedAt).First();
+            var latestFiles = await GetFiles(deployId: latestDeploy.Id);
+
+            var fileHashes = latestFiles.ToDictionary(file => file.Path, file => file.SHA1Hash);
             foreach (var entry in files) {
                 fileHashes[entry.Key] = SHA1Hash(entry.Value);
             }
