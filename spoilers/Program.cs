@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,9 +16,13 @@ namespace Spoilers
             var siteId = Environment.GetEnvironmentVariable("netlify_site_id");
 
             var netlify = new NetlifyClient(accessToken, siteId);
-            string spoilersPath = "/spoilers.json";
+            var deploys = await netlify.GetDeploys();
+            var latestDeploy = deploys.Where(d => d.State == "ready").OrderByDescending(d => d.CreatedAt).First();
 
-            var input = Encoding.UTF8.GetString(await netlify.GetFileContents(spoilersPath));
+            Console.WriteLine("Fetch latest spoilers.json.");
+
+            string spoilersPath = "/spoilers.json";
+            var input = Encoding.UTF8.GetString(await netlify.GetFileContents(spoilersPath, deployId: latestDeploy.Id));
             var spoilers = JsonConvert.DeserializeObject<List<Spoiler>>(input);
 
             spoilers = await Spoilers.Update(spoilers);
